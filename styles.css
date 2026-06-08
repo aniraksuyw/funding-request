@@ -131,37 +131,6 @@ button:hover {
   margin: 18px 0;
 }
 
-.settings-panel {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.55fr) minmax(360px, 1fr);
-  gap: 18px;
-  align-items: end;
-  margin-bottom: 18px;
-  padding: 20px 24px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.settings-panel p {
-  margin-bottom: 0;
-  color: var(--muted);
-}
-
-.settings-form {
-  display: grid;
-  gap: 12px;
-}
-
-.settings-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.sync-status,
 .sync-pill {
   display: inline-flex;
   align-items: center;
@@ -175,22 +144,10 @@ button:hover {
   font-weight: 700;
 }
 
-.sync-status.ready,
 .sync-pill.success {
   border-color: #a7d7c5;
   background: #eaf7f0;
   color: var(--primary-dark);
-}
-
-.runtime-status {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.88rem;
-}
-
-.runtime-status.error {
-  color: var(--danger);
-  font-weight: 700;
 }
 
 .metric {
@@ -420,8 +377,7 @@ dialog::backdrop {
   }
 
   .summary-grid,
-  .form-grid,
-  .settings-panel {
+  .form-grid {
     grid-template-columns: 1fr;
   }
 

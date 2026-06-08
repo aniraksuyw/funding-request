@@ -1,18 +1,12 @@
 const storageKey = "graduateFundingRequests";
-const scriptUrlKey = "graduateFundingScriptUrl";
 const builtInScriptUrl = "https://script.google.com/macros/s/AKfycbwwhyXDvLngx0cosCJk4h9Ay-mE_eVyOR1otb86xyzKnjoVVj03JTTrIGKCyW6uQrkobg/exec";
 
 const form = document.querySelector("#fundingForm");
-const settingsForm = document.querySelector("#settingsForm");
 const recordsBody = document.querySelector("#recordsBody");
 const emptyState = document.querySelector("#emptyState");
 const searchInput = document.querySelector("#searchInput");
 const exportButton = document.querySelector("#exportCsv");
 const clearButton = document.querySelector("#clearDemo");
-const testConnectionButton = document.querySelector("#testConnection");
-const scriptUrlInput = document.querySelector("#scriptUrl");
-const syncStatus = document.querySelector("#syncStatus");
-const runtimeStatus = document.querySelector("#runtimeStatus");
 const detailDialog = document.querySelector("#detailDialog");
 const detailContent = document.querySelector("#detailContent");
 const closeDialog = document.querySelector("#closeDialog");
@@ -27,24 +21,14 @@ const numberFormatter = new Intl.NumberFormat("zh-TW", {
 
 const statusOptions = ["待審核", "通過", "退回", "已撥款"];
 
-function setRuntimeStatus(message, isError = false) {
-  if (!runtimeStatus) return;
-  runtimeStatus.textContent = message;
-  runtimeStatus.classList.toggle("error", isError);
-}
-
 function hasRequiredElements() {
   return [
     form,
-    settingsForm,
     recordsBody,
     emptyState,
     searchInput,
     exportButton,
     clearButton,
-    testConnectionButton,
-    scriptUrlInput,
-    syncStatus,
     detailDialog,
     detailContent,
     closeDialog,
@@ -55,7 +39,6 @@ function hasRequiredElements() {
 }
 
 if (!hasRequiredElements()) {
-  setRuntimeStatus("系統沒有完整載入，請重新整理頁面。", true);
   throw new Error("Required page elements are missing.");
 }
 
@@ -81,22 +64,7 @@ function saveRequests(requests) {
 }
 
 function getScriptUrl() {
-  return localStorage.getItem(scriptUrlKey) || builtInScriptUrl;
-}
-
-function setScriptUrl(url) {
-  localStorage.setItem(scriptUrlKey, url.trim());
-  updateSyncStatus();
-}
-
-function isValidScriptUrl(url) {
-  return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url.trim());
-}
-
-function updateSyncStatus(message) {
-  const url = getScriptUrl();
-  syncStatus.textContent = message || (url ? "已內建" : "尚未設定");
-  syncStatus.classList.toggle("ready", Boolean(url));
+  return builtInScriptUrl;
 }
 
 function createRequestId() {
@@ -121,7 +89,7 @@ function getFormData() {
     purpose: data.get("purpose").trim(),
     attachment: data.get("attachment").trim(),
     status: "待審核",
-    syncState: getScriptUrl() ? "待同步" : "未設定",
+    syncState: "待同步",
     createdAt: new Date().toISOString(),
   };
 }
@@ -271,10 +239,8 @@ async function syncRequest(id) {
   try {
     await postToGoogleSheets(request);
     updateRequest(id, { syncState: "已同步", syncedAt: new Date().toISOString() });
-    updateSyncStatus("同步完成");
   } catch (error) {
     updateRequest(id, { syncState: "同步失敗" });
-    updateSyncStatus("同步失敗，請檢查 URL");
   }
 }
 
@@ -329,70 +295,6 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-settingsForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const url = scriptUrlInput.value.trim();
-  if (!url) {
-    updateSyncStatus("請先貼上 Web App URL");
-    alert("請先貼上 Google Apps Script 的 Web App URL。");
-    return;
-  }
-
-  if (!isValidScriptUrl(url)) {
-    updateSyncStatus("URL 格式看起來不正確");
-    alert("Web App URL 通常會長得像：https://script.google.com/macros/s/一長串代碼/exec");
-    return;
-  }
-
-  setScriptUrl(url);
-  updateSyncStatus("連線設定已儲存");
-  alert("連線設定已儲存。接著可以按「測試」。");
-});
-
-testConnectionButton.addEventListener("click", async () => {
-  const url = scriptUrlInput.value.trim();
-  if (!url) {
-    updateSyncStatus("請先貼上 Web App URL");
-    alert("請先貼上 Google Apps Script 的 Web App URL。");
-    return;
-  }
-
-  if (!isValidScriptUrl(url)) {
-    updateSyncStatus("URL 格式看起來不正確");
-    alert("Web App URL 通常會長得像：https://script.google.com/macros/s/一長串代碼/exec");
-    return;
-  }
-
-  setScriptUrl(url);
-
-  const testRequest = {
-    id: `TEST-${Date.now()}`,
-    applicantName: "連線測試",
-    studentId: "TEST",
-    email: "",
-    department: "",
-    category: "其他",
-    amount: 0,
-    expenseDate: "",
-    reviewer: "",
-    purpose: "測試 Google Sheets 連線",
-    attachment: "",
-    status: "待審核",
-    syncState: "測試",
-    createdAt: new Date().toISOString(),
-  };
-
-  updateSyncStatus("測試中");
-  try {
-    await postToGoogleSheets(testRequest);
-    updateSyncStatus("測試已送出");
-    alert("測試資料已送出。請到 Google Sheets 查看是否出現「連線測試」那一列。");
-  } catch (error) {
-    updateSyncStatus("測試失敗");
-    alert("測試失敗。請確認 Web App URL 正確，且 Apps Script 已部署為「任何人」可存取。");
-  }
-});
-
 recordsBody.addEventListener("change", (event) => {
   if (event.target.matches(".status-select")) {
     updateStatus(event.target.dataset.id, event.target.value);
@@ -417,8 +319,4 @@ clearButton.addEventListener("click", () => {
   renderRequests();
 });
 
-scriptUrlInput.value = getScriptUrl();
-scriptUrlInput.placeholder = "已內建 Google Sheets Web App URL";
-updateSyncStatus();
 renderRequests();
-setRuntimeStatus("系統已啟動，可以儲存連線或測試。");
