@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>研究生經費申請系統</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-labelledby="app-title">
+        <div>
+          <p class="eyebrow">Graduate Funding Request</p>
+          <h1 id="app-title">研究生經費申請系統</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-button" id="exportCsv" type="button" title="匯出 CSV">匯出</button>
+          <button class="ghost-button danger" id="clearDemo" type="button" title="清空所有資料">清空</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="申請統計">
+        <article class="metric">
+          <span>待審核</span>
+          <strong id="pendingCount">0</strong>
+        </article>
+        <article class="metric">
+          <span>已通過</span>
+          <strong id="approvedCount">0</strong>
+        </article>
+        <article class="metric">
+          <span>申請總額</span>
+          <strong id="totalAmount">NT$0</strong>
+        </article>
+      </section>
+
+      <section class="settings-panel" aria-labelledby="settings-title">
+        <div>
+          <h2 id="settings-title">Google Sheets 連線</h2>
+          <p>貼上 Apps Script Web App URL 後，送出申請會同步寫入 Google Sheets。</p>
+        </div>
+        <form class="settings-form" id="settingsForm">
+          <label>
+            Web App URL
+            <input id="scriptUrl" type="text" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" />
+          </label>
+          <div class="settings-actions">
+            <button class="secondary-button" type="submit">儲存連線</button>
+            <button class="secondary-button" id="testConnection" type="button">測試</button>
+            <span class="sync-status" id="syncStatus">尚未設定</span>
+          </div>
+          <p class="runtime-status" id="runtimeStatus">系統啟動中...</p>
+        </form>
+      </section>
+
+      <section class="workspace">
+        <form class="request-form" id="fundingForm" autocomplete="on">
+          <div class="section-heading">
+            <h2>新增申請</h2>
+            <p>資料會先存到本機瀏覽器；設定 Google Sheets 後也會同步上傳。</p>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              申請人
+              <input id="applicantName" name="applicantName" required placeholder="王小明" />
+            </label>
+
+            <label>
+              學號
+              <input id="studentId" name="studentId" required placeholder="M11200001" />
+            </label>
+
+            <label>
+              Email
+              <input id="email" name="email" type="email" required placeholder="student@example.edu.tw" />
+            </label>
+
+            <label>
+              系所 / 年級
+              <input id="department" name="department" required placeholder="資工所 碩二" />
+            </label>
+
+            <label>
+              經費類別
+              <select id="category" name="category" required>
+                <option value="">請選擇</option>
+                <option>會議報名費</option>
+                <option>交通費</option>
+                <option>住宿費</option>
+                <option>材料費</option>
+                <option>論文相關費用</option>
+                <option>其他</option>
+              </select>
+            </label>
+
+            <label>
+              申請金額
+              <input id="amount" name="amount" type="number" min="1" step="1" required placeholder="5000" />
+            </label>
+
+            <label>
+              預計支出日期
+              <input id="expenseDate" name="expenseDate" type="date" required />
+            </label>
+
+            <label>
+              指導教授 / 審核人
+              <input id="reviewer" name="reviewer" required placeholder="陳教授" />
+            </label>
+          </div>
+
+          <label>
+            申請用途
+            <textarea id="purpose" name="purpose" required rows="4" placeholder="請說明活動、購買項目或研究用途"></textarea>
+          </label>
+
+          <label>
+            附件連結
+            <input id="attachment" name="attachment" type="url" placeholder="估價單、活動頁面或雲端檔案連結" />
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit">送出申請</button>
+            <button class="secondary-button" type="reset">清除表單</button>
+          </div>
+        </form>
+
+        <section class="records-panel" aria-labelledby="records-title">
+          <div class="section-heading records-heading">
+            <div>
+              <h2 id="records-title">申請紀錄</h2>
+              <p>可搜尋、更新審核狀態與刪除測試資料。</p>
+            </div>
+            <input id="searchInput" class="search-input" placeholder="搜尋姓名、學號、用途" />
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>編號</th>
+                  <th>申請人</th>
+                  <th>用途</th>
+                  <th>金額</th>
+                  <th>狀態</th>
+                  <th>同步</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+            <p class="empty-state" id="emptyState">目前尚無申請資料。</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="detailDialog">
+      <div class="dialog-header">
+        <h2>申請明細</h2>
+        <button class="icon-button" id="closeDialog" type="button" title="關閉">×</button>
+      </div>
+      <div id="detailContent" class="detail-content"></div>
+    </dialog>
+
+    <script src="app.js?v=20260605-2"></script>
+  </body>
+</html>
