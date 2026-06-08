@@ -1,5 +1,6 @@
 const storageKey = "graduateFundingRequests";
 const scriptUrlKey = "graduateFundingScriptUrl";
+const builtInScriptUrl = "https://script.google.com/macros/s/AKfycbwwhyXDvLngx0cosCJk4h9Ay-mE_eVyOR1otb86xyzKnjoVVj03JTTrIGKCyW6uQrkobg/exec";
 
 const form = document.querySelector("#fundingForm");
 const settingsForm = document.querySelector("#settingsForm");
@@ -80,7 +81,7 @@ function saveRequests(requests) {
 }
 
 function getScriptUrl() {
-  return localStorage.getItem(scriptUrlKey) || "";
+  return localStorage.getItem(scriptUrlKey) || builtInScriptUrl;
 }
 
 function setScriptUrl(url) {
@@ -94,7 +95,7 @@ function isValidScriptUrl(url) {
 
 function updateSyncStatus(message) {
   const url = getScriptUrl();
-  syncStatus.textContent = message || (url ? "已設定" : "尚未設定");
+  syncStatus.textContent = message || (url ? "已內建" : "尚未設定");
   syncStatus.classList.toggle("ready", Boolean(url));
 }
 
@@ -417,6 +418,7 @@ clearButton.addEventListener("click", () => {
 });
 
 scriptUrlInput.value = getScriptUrl();
+scriptUrlInput.placeholder = "已內建 Google Sheets Web App URL";
 updateSyncStatus();
 renderRequests();
 setRuntimeStatus("系統已啟動，可以儲存連線或測試。");
